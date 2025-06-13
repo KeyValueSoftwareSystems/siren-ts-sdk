@@ -11,6 +11,7 @@ import {
   GetChannelTemplatesResponse,
   TemplateData,
   Template,
+  UpdateTemplateRequest,
 } from './types';
 import { SirenConfig } from '../common/types';
 import { handleAPIResponse, SirenValidationError, APIResponse } from '../common/errors';
@@ -44,9 +45,21 @@ export class TemplateClient {
   /**
    * Create a new template.
    */
-  async createTemplate(request: CreateTemplateRequest): Promise<APIResponse<TemplateData>> {
+  async create(request: CreateTemplateRequest): Promise<APIResponse<TemplateData>> {
     if (!request.name) {
       throw new SirenValidationError('Template name is required');
+    }
+    if (!request.description) {
+      throw new SirenValidationError('Template description is required');
+    }
+    if (!request.tagNames) {
+      throw new SirenValidationError('Template tags are required');
+    }
+    if (!request.variables) {
+      throw new SirenValidationError('Template variables are required');
+    }
+    if (!request.configurations || Object.keys(request.configurations).length === 0) {
+      throw new SirenValidationError('At least one channel configuration is required');
     }
 
     const response = await fetch(`${this.templateBaseUrl}/public/template`, {
@@ -63,7 +76,7 @@ export class TemplateClient {
   /**
    * Update an existing template by ID.
    */
-  async updateTemplate(templateId: string, request: CreateTemplateRequest): Promise<APIResponse<TemplateData>> {
+  async update(templateId: string, request: UpdateTemplateRequest): Promise<APIResponse<TemplateData>> {
     if (!templateId) {
       throw new SirenValidationError('Template ID is required');
     }
@@ -85,7 +98,7 @@ export class TemplateClient {
   /**
    * Get all templates, optionally filtered and paginated.
    */
-  async getTemplates(query?: GetTemplatesQuery): Promise<APIResponse<GetTemplatesResponse['data']>> {
+  async get(query?: GetTemplatesQuery): Promise<APIResponse<GetTemplatesResponse['data']>> {
     const params = new URLSearchParams();
     if (query) {
       if (query.tagNames) params.append('tagNames', query.tagNames);
@@ -107,8 +120,9 @@ export class TemplateClient {
 
   /**
    * Delete a template by ID.
+   * @returns A boolean indicating whether the deletion was successful.
    */
-  async deleteTemplate(templateId: string): Promise<APIResponse<DeleteTemplateResponse['data']>> {
+  async delete(templateId: string): Promise<APIResponse<boolean>> {
     if (!templateId) {
       throw new SirenValidationError('Template ID is required');
     }
@@ -120,13 +134,23 @@ export class TemplateClient {
         'Content-Type': 'application/json',
       },
     });
-    return handleAPIResponse<DeleteTemplateResponse['data']>(response);
+
+    if (response.status === 204) {
+      return {
+        data: true,
+        error: null,
+        errors: null,
+        meta: null
+      };
+    }
+
+    return handleAPIResponse<boolean>(response);
   }
 
   /**
    * Publish a template by ID.
    */
-  async publishTemplate(templateId: string): Promise<APIResponse<Template>> {
+  async publish(templateId: string): Promise<APIResponse<Template>> {
     if (!templateId) {
       throw new SirenValidationError('Template ID is required');
     }

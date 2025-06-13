@@ -27,6 +27,33 @@ export interface CreateTemplateRequest {
   };
 }
 
+export interface UpdateTemplateRequest {
+  name: string;
+  description?: string;
+  tagNames?: string[];
+  variables?: Array<{
+    name: string;
+    defaultValue: string;
+  }>;
+  configurations?: {
+    SMS?: {
+      body: string;
+      channel: 'SMS';
+      isFlash: boolean;
+      isUnicode: boolean;
+    };
+    EMAIL?: {
+      subject: string;
+      channel: 'EMAIL';
+      body: string;
+      attachments: any[];
+      isRawHTML: boolean;
+      isPlainText: boolean;
+    };
+    [key: string]: any;
+  };
+}
+
 export interface TemplateData {
   templateId: string;
   templateName: string;
@@ -102,7 +129,7 @@ export interface GetTemplatesResponse {
 }
 
 export interface DeleteTemplateResponse {
-  data: any | null;
+  data: boolean;
   error: {
     errorCode: string;
     message: string;

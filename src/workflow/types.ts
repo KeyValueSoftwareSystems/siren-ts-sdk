@@ -13,34 +13,34 @@ export interface WorkflowBulkTriggerRequest {
 }
 
 export interface WorkflowTriggerResponse {
-  data: {
-    requestId: string;
-    workflowExecutionId: string;
-  } | null;
-  error: {
-    errorCode: string;
-    message: string;
-  } | null;
-  errors: Array<{
-    errorCode: string;
-    message: string;
-  }> | null;
-  meta: any | null;
+  requestId: string;
+  workflowExecutionId: string;
 }
 
 export interface WorkflowBulkTriggerResponse {
-  data: {
-    requestId: string;
-    workflowExecutionIds: string[];
-  } | null;
-  error: {
-    errorCode: string;
-    message: string;
-  } | null;
-  errors: Array<{
-    errorCode: string;
-    message: string;
-  }> | null;
-  meta: any | null;
+  requestId: string;
+  workflowExecutionIds: string[];
 }
+
+export interface ScheduleWorkflowRequest {
+  name: string;
+  scheduleTime: string;
+  timezoneId: string;
+  startDate: string;
+  workflowType: string;
+  workflowId: string;
+  inputData: Record<string, any>;
+  endDate?: string;
+}
+
+export interface ScheduleWorkflowResponse {
+  scheduleId: string;
+  status: string;
+  workflowName: string;
+  runAt?: string;
+  cron?: string;
+  timezone?: string;
+  createdAt: string;
+}
+
 export {}; 

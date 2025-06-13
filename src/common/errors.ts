@@ -60,6 +60,16 @@ export async function handleAPIResponse<T>(response: Response): Promise<APIRespo
     );
   }
 
+  // Handle 204 No Content response
+  if (response.status === 204) {
+    return {
+      data: true as T,
+      error: null,
+      errors: null,
+      meta: null
+    };
+  }
+
   const data: APIResponse<T> = await response.json();
   
   if (data.error) {

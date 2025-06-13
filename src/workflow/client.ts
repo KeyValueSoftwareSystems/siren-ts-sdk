@@ -3,77 +3,88 @@ import {
   WorkflowBulkTriggerRequest,
   WorkflowTriggerResponse,
   WorkflowBulkTriggerResponse,
+  ScheduleWorkflowRequest,
+  ScheduleWorkflowResponse,
 } from './types';
 import { SirenConfig } from '../common/types';
-import { handleAPIResponse, SirenValidationError, APIResponse } from '../common/errors';
-
-const BASE_URLS = {
-  prod: 'https://api.trysiren.io/api/v2',
-  dev: 'https://api.dev.trysiren.io/api/v2',
-};
+import { BaseClient } from '../base/client';
+import { SirenValidationError } from '../common/errors';
 
 /**
  * Client for Siren workflow APIs.
  */
-export class WorkflowClient {
-  private apiToken: string;
-  private baseUrl: string;
-
+export class WorkflowClient extends BaseClient {
   constructor(config: SirenConfig) {
-    if (!config.apiToken) {
-      throw new SirenValidationError('API token is required');
-    }
-    this.apiToken = config.apiToken;
-    if (config.baseUrl) {
-      this.baseUrl = config.baseUrl;
-    } else if (config.env === 'dev') {
-      this.baseUrl = BASE_URLS.dev;
-    } else {
-      this.baseUrl = BASE_URLS.prod;
-    }
+    super(config);
   }
 
   /**
    * Trigger a workflow execution.
    */
-  async triggerWorkflow(request: WorkflowTriggerRequest): Promise<APIResponse<WorkflowTriggerResponse['data']>> {
+  async trigger(request: WorkflowTriggerRequest) {
     if (!request.workflowName) {
       throw new SirenValidationError('Workflow name is required');
     }
     if (!request.notify) {
       throw new SirenValidationError('Notification configuration is required');
     }
-
-    const response = await fetch(`${this.baseUrl}/workflows/trigger`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.apiToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(request),
-    });
-    return handleAPIResponse<WorkflowTriggerResponse['data']>(response);
+    return this.makeRequest<WorkflowTriggerRequest, WorkflowTriggerResponse>(
+      'POST',
+      '/api/v2/workflows/trigger',
+      request
+    );
   }
 
   /**
    * Trigger multiple workflow executions in bulk.
    */
-  async triggerBulkWorkflow(request: WorkflowBulkTriggerRequest): Promise<APIResponse<WorkflowBulkTriggerResponse['data']>> {
+  async triggerBulk(request: WorkflowBulkTriggerRequest) {
     if (!request.workflowName) {
       throw new SirenValidationError('Workflow name is required');
     }
     if (!request.notify || request.notify.length === 0) {
       throw new SirenValidationError('At least one notification configuration is required');
     }
+    return this.makeRequest<WorkflowBulkTriggerRequest, WorkflowBulkTriggerResponse>(
+      'POST',
+      '/api/v2/workflows/trigger/bulk',
+      request
+    );
+  }
 
-    const response = await fetch(`${this.baseUrl}/workflows/trigger/bulk`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.apiToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(request),
-    });
-    return handleAPIResponse<WorkflowBulkTriggerResponse['data']>(response);
+  /**
+   * Schedule a workflow to run at a future time or on a recurring basis.
+   * @param req ScheduleWorkflowRequest
+   * @returns ScheduleWorkflowResponse
+   */
+  async schedule(req: ScheduleWorkflowRequest): Promise<ScheduleWorkflowResponse> {
+    if (!req.name) {
+      throw new SirenValidationError('Workflow name is required');
+    }
+    if (!req.workflowId) {
+      throw new SirenValidationError('Workflow ID is required');
+    }
+
+    // API expects camelCase with specific format
+    const apiRequest = {
+      name: req.name,
+      scheduleTime: req.scheduleTime,
+      timezoneId: req.timezoneId,
+      startDate: req.startDate,
+      type: req.workflowType,
+      workflowId: req.workflowId,
+      inputData: req.inputData,
+      endDate: req.endDate || '' // Default to empty string if not provided
+    };
+
+    const response = await this.makeRequest<typeof apiRequest, ScheduleWorkflowResponse>(
+      'POST',
+      '/api/v1/public/schedules',
+      apiRequest
+    );
+    if (!response.data) {
+      throw new Error('No data returned from workflow schedule response');
+    }
+    return response.data;
   }
 } 

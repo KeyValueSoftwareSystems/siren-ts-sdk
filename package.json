@@ -34,7 +34,9 @@
     "url": "https://github.com/KeyValueSoftwareSystems/siren-ts-sdk/issues"
   },
   "homepage": "https://github.com/KeyValueSoftwareSystems/siren-ts-sdk#readme",
-  "dependencies": {},
+  "dependencies": {
+    "dotenv": "^16.5.0"
+  },
   "devDependencies": {
     "@types/jest": "^29.5.0",
     "@types/node": "^18.15.11",
@@ -54,4 +56,4 @@
     "README.md",
     "LICENSE"
   ]
-} 
+}
