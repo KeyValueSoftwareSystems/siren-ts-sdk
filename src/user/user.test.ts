@@ -1,5 +1,4 @@
 import { UserClient } from './client';
-import { User } from './types';
 
 const API_TOKEN = 'test_api_token';
 const BASE_URL = 'https://api.dev.trysiren.io';

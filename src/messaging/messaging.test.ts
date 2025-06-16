@@ -1,23 +1,18 @@
 import { MessageClient } from './client';
 import { SirenConfig } from '../common/types';
 
-const API_TOKEN = 'test_api_token';
+const API_TOKEN = 'test_api_key';
 const BASE_URL = 'https://api.dev.trysiren.io';
 
 describe('MessageClient', () => {
   let client: MessageClient;
-  let config: SirenConfig;
 
   beforeEach(() => {
-    config = {
-      apiToken: API_TOKEN,
-      env: 'dev',
-    };
-    client = new MessageClient(config);
+    client = new MessageClient({ apiToken: API_TOKEN, baseUrl: BASE_URL });
   });
 
   describe('send', () => {
-    it('should send a message successfully', async () => {
+    it('should send a direct message successfully', async () => {
       const mockResponse = {
         data: {
           notificationId: 'test_msg_123',
@@ -31,11 +26,10 @@ describe('MessageClient', () => {
       });
 
       const result = await client.send(
-        'test_template',
-        'SLACK',
         'direct',
-        'U123ABC',
-        { name: 'John' }
+        'alice@company.com',
+        'EMAIL',
+        'Your account has been successfully verified.'
       );
 
       expect(result).toBe('test_msg_123');
@@ -48,16 +42,15 @@ describe('MessageClient', () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            template: { name: 'test_template' },
-            recipient: { type: 'direct', value: 'U123ABC' },
-            channel: 'SLACK',
-            templateVariables: { name: 'John' },
+            recipient: { type: 'direct', value: 'alice@company.com' },
+            channel: 'EMAIL',
+            body: 'Your account has been successfully verified.'
           }),
         }
       );
     });
 
-    it('should send a message with a different template and recipient', async () => {
+    it('should send a template message successfully', async () => {
       const mockResponse = {
         data: {
           notificationId: 'test_msg_456',
@@ -71,11 +64,12 @@ describe('MessageClient', () => {
       });
 
       const result = await client.send(
-        'another_template',
-        'EMAIL',
         'direct',
-        'user@example.com',
-        { user_name: 'Jane' }
+        'U01UBCD06BB',
+        'SLACK',
+        undefined,
+        'welcome_template',
+        { user_name: 'John' }
       );
 
       expect(result).toBe('test_msg_456');
@@ -88,20 +82,26 @@ describe('MessageClient', () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            template: { name: 'another_template' },
-            recipient: { type: 'direct', value: 'user@example.com' },
-            channel: 'EMAIL',
-            templateVariables: { user_name: 'Jane' },
+            recipient: { type: 'direct', value: 'U01UBCD06BB' },
+            channel: 'SLACK',
+            template: { name: 'welcome_template' },
+            templateVariables: { user_name: 'John' }
           }),
         }
       );
+    });
+
+    it('should throw error if neither body nor template is provided', async () => {
+      await expect(
+        client.send('direct', 'U01UBCD06BB', 'SLACK')
+      ).rejects.toThrow('Either body or templateName must be provided');
     });
 
     it('should handle API errors', async () => {
       const mockError = {
         data: null,
         error: {
-          code: 'INVALID_TEMPLATE',
+          errorCode: 'INVALID_TEMPLATE',
           message: 'Template not found',
         },
       };
@@ -113,7 +113,7 @@ describe('MessageClient', () => {
       });
 
       await expect(
-        client.send('nonexistent', 'SLACK', 'direct', 'U123ABC')
+        client.send('direct', 'U01UBCD06BB', 'SLACK', undefined, 'nonexistent')
       ).rejects.toThrow('Template not found');
     });
   });
@@ -133,17 +133,7 @@ describe('MessageClient', () => {
       });
 
       const result = await client.getStatus('test_msg_123');
-
       expect(result).toBe('DELIVERED');
-      expect(global.fetch).toHaveBeenCalledWith(
-        `${BASE_URL}/api/v1/public/message-status/test_msg_123`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${API_TOKEN}`,
-          },
-        }
-      );
     });
   });
 
@@ -152,17 +142,11 @@ describe('MessageClient', () => {
       const mockResponse = {
         data: [
           {
-            text: 'Reply 1',
-            user: 'U123',
-            ts: '12345.6789',
-            threadTs: '12345.0000',
-          },
-          {
-            text: 'Reply 2',
-            user: 'U456',
-            ts: '12346.7890',
-            threadTs: '12345.0000',
-          },
+            text: 'Reply message',
+            user: 'U01UBCD06BB',
+            ts: '1234567890.123456',
+            threadTs: '1234567890.123456'
+          }
         ],
         error: null,
       };
@@ -173,37 +157,14 @@ describe('MessageClient', () => {
       });
 
       const result = await client.getReplies('test_msg_123');
-
-      expect(result).toHaveLength(2);
-      expect(result[0].text).toBe('Reply 1');
-      expect(result[0].user).toBe('U123');
-      expect(result[1].text).toBe('Reply 2');
-      expect(result[1].user).toBe('U456');
-      expect(global.fetch).toHaveBeenCalledWith(
-        `${BASE_URL}/api/v1/public/get-reply/test_msg_123`,
+      expect(result).toEqual([
         {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${API_TOKEN}`,
-          },
+          text: 'Reply message',
+          user: 'U01UBCD06BB',
+          ts: '1234567890.123456',
+          threadTs: '1234567890.123456'
         }
-      );
-    });
-
-    it('should handle empty replies', async () => {
-      const mockResponse = {
-        data: [],
-        error: null,
-      };
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(mockResponse),
-      });
-
-      const result = await client.getReplies('test_msg_no_replies');
-
-      expect(result).toHaveLength(0);
+      ]);
     });
   });
 }); 

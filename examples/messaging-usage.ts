@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { SirenClient } from '../src';
+import { SirenAPIError, SirenError } from '../src/common/errors';
 
 const apiToken = process.env.SIREN_API_KEY;
 if (!apiToken) {
@@ -11,27 +12,38 @@ const client = new SirenClient({ apiToken, env: 'dev' });
 
 async function messagingExamples() {
   try {
-    // 1. Send a message
+    // Send direct message without template
     const messageId = await client.message.send(
-      'sampleTemplate',
-      'SLACK',
       'direct',
       'U01UBCD06BB',
-      { user_name: 'John' }
+      'SLACK',
+      'Hello! This is a direct message without template.'
     );
-    console.log('Message sent with ID:', messageId);
+    console.log('Message sent:', messageId);
 
-    // 2. Get message status
+    // Send message using template
+    const templateMessageId = await client.message.send(
+      'direct',
+      'U01UBCD06BB',
+      'SLACK',
+      undefined,
+      'sampleTemplate',
+      { user_name: 'Alan' }
+    );
+    console.log('Template message sent:', templateMessageId);
+
+    // Get message status
     const status = await client.message.getStatus(messageId);
     console.log('Message status:', status);
 
-    // 3. Get message replies
+    // Get message replies
     const replies = await client.message.getReplies(messageId);
     console.log('Message replies:', replies);
-
   } catch (error) {
-    if (error instanceof Error) {
-      console.error('Error:', error.message);
+    if (error instanceof SirenAPIError) {
+      console.error(`API Error: ${error.errorCode} - ${error.message}`);
+    } else if (error instanceof SirenError) {
+      console.error(`SDK Error: ${error.message}`);
     } else {
       console.error('Unexpected error:', error);
     }

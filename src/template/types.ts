@@ -1,235 +1,249 @@
-// Template and Channel Template Types
+/**
+ * Template and Channel Template Types
+ */
 
+/**
+ * Base interface for template configuration.
+ */
+export interface TemplateConfig {
+  /** SMS channel configuration */
+  SMS?: {
+    /** Message body */
+    body: string;
+    /** Channel type */
+    channel: 'SMS';
+    /** Whether the message is a flash message */
+    isFlash: boolean;
+    /** Whether the message contains Unicode characters */
+    isUnicode: boolean;
+  };
+  /** Email channel configuration */
+  EMAIL?: {
+    /** Email subject */
+    subject: string;
+    /** Channel type */
+    channel: 'EMAIL';
+    /** Email body */
+    body: string;
+    /** List of attachments */
+    attachments: any[];
+    /** Whether the body contains raw HTML */
+    isRawHTML: boolean;
+    /** Whether the body is plain text */
+    isPlainText: boolean;
+  };
+  /** Other channel configurations */
+  [key: string]: any;
+}
+
+/**
+ * Request interface for creating a new template.
+ */
 export interface CreateTemplateRequest {
+  /** Name of the template */
   name: string;
+  /** Description of the template */
   description: string;
+  /** List of tags associated with the template */
   tagNames: string[];
+  /** Template variables with default values */
   variables: Array<{
     name: string;
-    defaultValue: string;
+    defaultValue?: string;
   }>;
+  /** Channel-specific template configurations */
   configurations: {
     SMS?: {
       body: string;
       channel: 'SMS';
-      isFlash: boolean;
-      isUnicode: boolean;
+      isFlash?: boolean;
+      isUnicode?: boolean;
     };
     EMAIL?: {
       subject: string;
       channel: 'EMAIL';
       body: string;
-      attachments: any[];
-      isRawHTML: boolean;
-      isPlainText: boolean;
+      attachments?: any[];
+      isRawHTML?: boolean;
+      isPlainText?: boolean;
     };
     [key: string]: any;
   };
 }
 
+/**
+ * Request interface for updating an existing template.
+ */
 export interface UpdateTemplateRequest {
+  /** Name of the template */
   name: string;
+  /** Description of the template */
   description?: string;
+  /** List of tags associated with the template */
   tagNames?: string[];
+  /** Template variables with default values */
   variables?: Array<{
     name: string;
-    defaultValue: string;
+    defaultValue?: string;
   }>;
+  /** Channel-specific template configurations */
   configurations?: {
     SMS?: {
       body: string;
       channel: 'SMS';
-      isFlash: boolean;
-      isUnicode: boolean;
+      isFlash?: boolean;
+      isUnicode?: boolean;
     };
     EMAIL?: {
       subject: string;
       channel: 'EMAIL';
       body: string;
-      attachments: any[];
-      isRawHTML: boolean;
-      isPlainText: boolean;
+      attachments?: any[];
+      isRawHTML?: boolean;
+      isPlainText?: boolean;
     };
     [key: string]: any;
   };
 }
 
+/**
+ * Response data for template operations.
+ */
 export interface TemplateData {
+  /** Unique identifier of the template */
   templateId: string;
+  /** Name of the template */
   templateName: string;
+  /** ID of the draft version */
   draftVersionId: string;
-  channelTemplateList: any[];
+  /** List of channel templates */
+  channelTemplateList: Array<{
+    channel: string;
+    configuration: any;
+  }>;
 }
 
-export interface CreateTemplateResponse {
-  data: TemplateData | null;
-  error: {
-    errorCode: string;
-    message: string;
-  } | null;
-  errors: Array<{
-    errorCode: string;
-    message: string;
-  }> | null;
-  meta: any | null;
-}
-
+/**
+ * Query parameters for getting templates.
+ */
 export interface GetTemplatesQuery {
+  /** Filter by tag names */
   tagNames?: string;
+  /** Search query */
   search?: string;
+  /** Sort field */
   sort?: string;
+  /** Page number */
   page?: number;
+  /** Page size */
   size?: number;
 }
 
+/**
+ * Template version information.
+ */
 export interface TemplateVersion {
+  /** Unique identifier */
   id: string;
+  /** Version number */
   version: number;
-  status: string;
-  publishedAt: string;
+  /** Version status */
+  status: 'DRAFT' | 'PUBLISHED_LATEST' | 'PUBLISHED';
+  /** Publication timestamp */
+  publishedAt: string | null;
 }
 
+/**
+ * Template information.
+ */
 export interface Template {
+  /** Unique identifier */
   id: string;
+  /** Name of the template */
   name: string;
+  /** Description of the template */
   description: string;
+  /** Template variables */
   variables: Array<{
     name: string;
-    defaultValue: string;
+    defaultValue?: string;
   }>;
+  /** List of tags */
   tags: string[];
+  /** Draft version information */
   draftVersion?: TemplateVersion;
+  /** Published version information */
   publishedVersion?: TemplateVersion;
-  templateVersions?: TemplateVersion[];
+  /** List of all versions */
+  templateVersions: TemplateVersion[];
 }
 
-export interface GetTemplatesResponse {
-  data: {
-    totalElements: number;
-    totalPages: number;
-    size: number;
-    content: Template[];
-    number: number;
-    sort: any;
-    numberOfElements: number;
-    first: boolean;
-    last: boolean;
-    pageable: any;
-    empty: boolean;
-  } | null;
-  error: {
-    errorCode: string;
-    message: string;
-  } | null;
-  errors: Array<{
-    errorCode: string;
-    message: string;
-  }> | null;
-  meta: any | null;
-}
-
-export interface DeleteTemplateResponse {
-  data: boolean;
-  error: {
-    errorCode: string;
-    message: string;
-  } | null;
-  errors: Array<{
-    errorCode: string;
-    message: string;
-  }> | null;
-  meta: any | null;
-}
-
-export interface PublishTemplateResponse {
-  data: Template | null;
-  error: {
-    errorCode: string;
-    message: string;
-  } | null;
-  errors: Array<{
-    errorCode: string;
-    message: string;
-  }> | null;
-  meta: any | null;
-}
-
+/**
+ * SMS channel template configuration.
+ */
 export interface ChannelTemplateSMSConfig {
+  /** Message body */
   body: string;
+  /** Channel type */
   channel: 'SMS';
-  isFlash: boolean;
-  isUnicode: boolean;
+  /** Whether the message is a flash message */
+  isFlash?: boolean;
+  /** Whether the message contains Unicode characters */
+  isUnicode?: boolean;
 }
 
+/**
+ * Email channel template configuration.
+ */
 export interface ChannelTemplateEmailConfig {
+  /** Email subject */
   subject: string;
+  /** Channel type */
   channel: 'EMAIL';
+  /** Email body */
   body: string;
-  attachments: any[];
-  isRawHTML: boolean;
-  isPlainText: boolean;
+  /** List of attachments */
+  attachments?: any[];
+  /** Whether the body contains raw HTML */
+  isRawHTML?: boolean;
+  /** Whether the body is plain text */
+  isPlainText?: boolean;
 }
 
+/**
+ * Request interface for creating channel templates.
+ */
 export interface CreateChannelTemplateRequest {
+  /** SMS configuration */
   SMS?: ChannelTemplateSMSConfig;
+  /** Email configuration */
   EMAIL?: ChannelTemplateEmailConfig;
+  /** Other channel configurations */
   [key: string]: any;
 }
 
-export interface CreateChannelTemplateResponse {
-  data: {
-    SMS?: ChannelTemplateSMSConfig;
-    EMAIL?: ChannelTemplateEmailConfig;
-    [key: string]: any;
-  } | null;
-  error: {
-    errorCode: string;
-    message: string;
-  } | null;
-  errors: Array<{
-    errorCode: string;
-    message: string;
-  }> | null;
-  meta: any | null;
-}
-
+/**
+ * Query parameters for getting channel templates.
+ */
 export interface GetChannelTemplatesQuery {
+  /** Filter by channel */
   channel?: string;
+  /** Search query */
   search?: string;
+  /** Sort field */
   sort?: string;
+  /** Page number */
   page?: number;
+  /** Page size */
   size?: number;
 }
 
+/**
+ * Channel template information.
+ */
 export interface ChannelTemplate {
+  /** Channel type */
   channel: string;
-  configuration: {
-    channel: string;
-    [key: string]: any;
-  };
-}
-
-export interface GetChannelTemplatesResponse {
-  data: {
-    totalElements: number;
-    totalPages: number;
-    size: number;
-    content: ChannelTemplate[];
-    number: number;
-    sort: any;
-    numberOfElements: number;
-    first: boolean;
-    last: boolean;
-    pageable: any;
-    empty: boolean;
-  } | null;
-  error: {
-    errorCode: string;
-    message: string;
-  } | null;
-  errors: Array<{
-    errorCode: string;
-    message: string;
-  }> | null;
-  meta: any | null;
+  /** Channel-specific configuration */
+  configuration: ChannelTemplateSMSConfig | ChannelTemplateEmailConfig;
 } 

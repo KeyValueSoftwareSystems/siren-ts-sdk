@@ -36,12 +36,12 @@ async function templateExamples() {
     });
     console.log('Create Template Response:', createRes);
 
-    if (!createRes.data?.templateId) {
+    if (!createRes?.templateId) {
       throw new Error('Failed to create template: No template ID returned');
     }
 
     // 2. Create channel templates
-    const channelTemplateRes = await client.template.createChannelTemplate(createRes.data.templateId, {
+    const channelTemplateRes = await client.template.createChannelTemplate(createRes.templateId, {
       EMAIL: {
         subject: 'Welcome {{user_name}}!',
         channel: 'EMAIL',
@@ -50,17 +50,17 @@ async function templateExamples() {
         isRawHTML: true,
         isPlainText: false
       },
-      SMS: {
+        SMS: {
         body: 'Hi {{user_name}}! Welcome aboard!',
-        channel: 'SMS',
-        isFlash: false,
-        isUnicode: false
+          channel: 'SMS',
+          isFlash: false,
+          isUnicode: false
       }
     });
     console.log('Create Channel Templates Response:', channelTemplateRes);
 
     // 3. Update the template
-    const updateRes = await client.template.update(createRes.data.templateId, {
+    const updateRes = await client.template.update(createRes.templateId, {
       name: 'Updated_Welcome_Template',
       description: 'Updated welcome email template',
       tagNames: ['welcome', 'updated']
@@ -68,11 +68,11 @@ async function templateExamples() {
     console.log('Update Template Response:', updateRes);
 
     // 4. Publish the template
-    const publishRes = await client.template.publish(createRes.data.templateId);
+    const publishRes = await client.template.publish(createRes.templateId);
     console.log('Publish Template Response:', publishRes);
 
     // 5. Get channel templates for the published version
-    const publishedVersionId = publishRes.data?.publishedVersion?.id;
+    const publishedVersionId = publishRes.publishedVersion?.id;
     if (publishedVersionId) {
       const getChannelTemplatesRes = await client.template.getChannelTemplates(publishedVersionId);
       console.log('Get Channel Templates Response:', getChannelTemplatesRes);
@@ -83,8 +83,8 @@ async function templateExamples() {
     console.log('Get Templates Response:', getRes);
 
     // 7. Delete the template
-    const deleteRes = await client.template.delete(createRes.data.templateId);
-    console.log('Delete Template Response:', deleteRes.data ? 'Template deleted successfully' : 'Failed to delete template');
+    const deleteRes = await client.template.delete(createRes.templateId);
+    console.log('Delete Template Response:', deleteRes ? 'Template deleted successfully' : 'Failed to delete template');
 
   } catch (error) {
     if (error instanceof SirenValidationError) {

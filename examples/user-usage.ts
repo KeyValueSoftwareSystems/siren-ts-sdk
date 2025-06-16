@@ -1,47 +1,48 @@
-import { config } from 'dotenv';
-import { SirenClient } from '../src/client';
+import 'dotenv/config';
+import { SirenClient } from '../src';
+import { SirenAPIError, SirenError } from '../src/common/errors';
 
-// Load environment variables from .env file
-config();
+const apiToken = process.env.SIREN_API_KEY;
+if (!apiToken) {
+  console.error('Error: SIREN_API_KEY environment variable is not set');
+  process.exit(1);
+}
+
+const client = new SirenClient({ apiToken, env: 'dev' });
 
 async function userExamples() {
-  // Initialize the client with your API token
-  const client = new SirenClient({
-    apiToken: process.env.SIREN_API_KEY || '',
-    env: 'dev',
-  });
-
   try {
-    // Add a new user
+    // Add user
     const user = await client.user.add({
       uniqueId: 'john_doe_008',
       lastName: 'Doe',
       email: 'john.doe@company.com',
       activeChannels: ['EMAIL', 'SMS'],
-      active: true,
+      active: true
     });
     console.log('Created user:', user.id);
 
-    // Update the user
+    // Update user
     const updatedUser = await client.user.update('john_doe_008', {
       firstName: 'Jane',
       lastName: 'Smith',
       email: 'jane.smith@company.com',
-      activeChannels: ['EMAIL', 'SMS', 'WHATSAPP'],
+      activeChannels: ['EMAIL', 'SMS', 'WHATSAPP']
     });
     console.log('Updated user:', updatedUser.id);
 
-    // Delete the user
+    // Delete user
     const deleted = await client.user.delete('john_doe_008');
     console.log('Deleted user:', deleted);
   } catch (error) {
-    if (error instanceof Error) {
-      console.error('Error:', error.message);
+    if (error instanceof SirenAPIError) {
+      console.error(`API Error: ${error.errorCode} - ${error.message}`);
+    } else if (error instanceof SirenError) {
+      console.error(`SDK Error: ${error.message}`);
     } else {
-      console.error('Unknown error:', error);
+      console.error('Unexpected error:', error);
     }
   }
 }
 
-// Run the examples
-userExamples().catch(console.error); 
+userExamples(); 

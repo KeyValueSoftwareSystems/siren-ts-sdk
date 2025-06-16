@@ -54,8 +54,8 @@ describe('TemplateClient', () => {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${API_TOKEN}`,
-            'Content-Type': 'application/json',
           },
+          body: undefined,
         }
       );
     });
@@ -89,8 +89,8 @@ describe('TemplateClient', () => {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${API_TOKEN}`,
-            'Content-Type': 'application/json',
           },
+          body: undefined,
         }
       );
     });
@@ -154,7 +154,7 @@ describe('TemplateClient', () => {
           },
         },
       });
-      expect(result.data).toEqual(mockResponse.data);
+      expect(result).toEqual(mockResponse.data);
       expect(global.fetch).toHaveBeenCalledWith(
         `${BASE_URL}/api/v1/public/template`,
         {
@@ -262,7 +262,7 @@ describe('TemplateClient', () => {
         tagNames: ['test', 'updated'],
         variables: [{ name: 'user_name', defaultValue: 'Updated Guest' }],
       });
-      expect(result.data).toEqual(mockResponse.data);
+      expect(result).toEqual(mockResponse.data);
       expect(global.fetch).toHaveBeenCalledWith(
         `${BASE_URL}/api/v1/public/template/tpl_123`,
         {
@@ -335,15 +335,15 @@ describe('TemplateClient', () => {
         status: 204,
       });
       const result = await client.delete('tpl_123');
-      expect(result.data).toBe(true);
+      expect(result).toBe(true);
       expect(global.fetch).toHaveBeenCalledWith(
         `${BASE_URL}/api/v1/public/template/tpl_123`,
         {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${API_TOKEN}`,
-            'Content-Type': 'application/json',
           },
+          body: undefined,
         }
       );
     });
@@ -395,15 +395,15 @@ describe('TemplateClient', () => {
         json: () => Promise.resolve(mockResponse),
       });
       const result = await client.publish('tpl_123');
-      expect(result.data).toEqual(mockResponse.data);
+      expect(result).toEqual(mockResponse.data);
       expect(global.fetch).toHaveBeenCalledWith(
         `${BASE_URL}/api/v1/public/template/tpl_123/publish`,
         {
           method: 'PATCH',
           headers: {
             'Authorization': `Bearer ${API_TOKEN}`,
-            'Content-Type': 'application/json',
           },
+          body: undefined,
         }
       );
     });
@@ -464,8 +464,8 @@ describe('TemplateClient', () => {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${API_TOKEN}`,
-            'Content-Type': 'application/json',
           },
+          body: undefined,
         }
       );
     });
@@ -516,7 +516,7 @@ describe('TemplateClient', () => {
           attachments: [],
         },
       });
-      expect(result.data).toEqual(mockResponse.data);
+      expect(result).toEqual(mockResponse.data);
       expect(global.fetch).toHaveBeenCalledWith(
         `${BASE_URL}/api/v1/public/template/tpl_123/channel-templates`,
         {

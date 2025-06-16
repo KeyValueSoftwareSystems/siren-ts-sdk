@@ -1,11 +1,12 @@
 import { BaseClient } from '../base/client';
 import { SirenConfig } from '../common/types';
+import { SirenValidationError } from '../common/errors';
 import {
-  MessageRepliesResponse,
-  MessageStatusResponse,
+  RecipientType,
   ReplyData,
   SendMessageRequest,
-  SendMessageResponse,
+  MessageData,
+  StatusData
 } from './types';
 
 export class MessageClient extends BaseClient {
@@ -14,38 +15,50 @@ export class MessageClient extends BaseClient {
   }
 
   /**
-   * Send a message using a specific template.
-   * @param templateName - The name of the template to use
-   * @param channel - The channel to send the message through (e.g., "SLACK", "EMAIL")
-   * @param recipientType - The type of recipient (e.g., "direct")
+   * Send a message either using a template or directly.
+   * @param recipientType - The type of recipient ("user_id" or "direct")
    * @param recipientValue - The identifier for the recipient (e.g., Slack user ID, email address)
-   * @param templateVariables - Optional dictionary of variables to populate the template
-   * @returns The message ID of the sent message
+   * @param channel - The channel to send the message through (e.g., "SLACK", "EMAIL")
+   * @param body - Optional message body text (required if no template)
+   * @param templateName - Optional template name (required if no body)
+   * @param templateVariables - Optional template variables for template-based messages
+   * @returns The notification ID of the sent message
    */
   async send(
-    templateName: string,
-    channel: string,
-    recipientType: string,
+    recipientType: RecipientType,
     recipientValue: string,
+    channel: string,
+    body?: string,
+    templateName?: string,
     templateVariables?: Record<string, any>
   ): Promise<string> {
-    const payload: SendMessageRequest = {
-      template: { name: templateName },
-      recipient: { type: recipientType, value: recipientValue },
-      channel,
-    };
-
-    if (templateVariables) {
-      payload.templateVariables = templateVariables;
+    if (!body && !templateName) {
+      throw new SirenValidationError('Either body or templateName must be provided');
     }
 
-    const response = await this.makeRequest<SendMessageRequest, SendMessageResponse>(
+    const payload: SendMessageRequest = {
+      recipient: {
+        type: recipientType,
+        value: recipientValue
+      },
+      channel
+    };
+
+    if (body) {
+      payload.body = body;
+    } else if (templateName) {
+      payload.template = { name: templateName };
+    if (templateVariables) {
+      payload.templateVariables = templateVariables;
+      }
+    }
+
+    const response = await this.makeRequest<SendMessageRequest, MessageData>(
       'POST',
       '/api/v1/public/send-messages',
       payload
     );
-
-    return response.data.notificationId;
+    return response.data!.notificationId;
   }
 
   /**
@@ -54,12 +67,11 @@ export class MessageClient extends BaseClient {
    * @returns The status of the message (e.g., "DELIVERED", "PENDING")
    */
   async getStatus(messageId: string): Promise<string> {
-    const response = await this.makeRequest<null, MessageStatusResponse>(
+    const response = await this.makeRequest<null, StatusData>(
       'GET',
       `/api/v1/public/message-status/${messageId}`
     );
-
-    return response.data.status;
+    return response.data!.status;
   }
 
   /**
@@ -68,11 +80,10 @@ export class MessageClient extends BaseClient {
    * @returns A list of reply objects containing message details
    */
   async getReplies(messageId: string): Promise<ReplyData[]> {
-    const response = await this.makeRequest<null, MessageRepliesResponse>(
+    const response = await this.makeRequest<null, ReplyData[]>(
       'GET',
       `/api/v1/public/get-reply/${messageId}`
     );
-
-    return response.data;
+    return response.data!;
   }
 } 

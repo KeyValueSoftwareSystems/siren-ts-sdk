@@ -1,4 +1,4 @@
-import { BaseAPIResponse } from '../base/types';
+import { APIResponse } from "../common/errors";
 
 export interface UserBase {
   uniqueId?: string;
@@ -31,4 +31,4 @@ export interface User extends UserBase {
   segments?: string[];
 }
 
-export type UserAPIResponse = BaseAPIResponse<User>; 
+export type UserAPIResponse = APIResponse<User>; 
