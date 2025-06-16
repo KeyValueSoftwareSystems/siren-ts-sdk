@@ -23,21 +23,28 @@ yarn add siren-ts-sdk
 ```typescript
 import { SirenClient } from 'siren-ts-sdk';
 
-// Initialize the client
-const client = new SirenClient({
-  apiToken: 'your-api-token',
-  env: 'prod' // or 'dev' for development environment
-});
+// Initialize using environment variables SIREN_API_KEY (and SIREN_ENV if available)
+const client = new SirenClient();
 
-// Send a message
-const messageId = await client.message.send({
-  templateName: 'welcome_email',
-  channel: 'EMAIL',
-  recipientType: 'direct',
-  recipientValue: 'user@example.com',
-  templateVariables: { user_name: 'John Doe' }
-});
-console.log('Sent:', messageId);
+// --- Send a direct message (no template) ---
+const directMessageId = await client.message.send(
+  'direct',
+  'alice@company.com',
+  'EMAIL',
+  'Your account has been successfully verified. You can now access all features.'
+);
+console.log('Sent direct message:', directMessageId);
+
+// --- Send a message using a template ---
+const templatedMessageId = await client.message.send(
+  'direct',            
+  'U01UBCD06BB',       
+  'SLACK',             
+  undefined,           
+  'welcome_template',  
+  { user_name: 'John' }
+);
+console.log('Sent template message:', templatedMessageId);
 ```
 
 ## SDK Methods
@@ -56,7 +63,7 @@ The Siren TypeScript SDK provides a clean, namespaced interface to interact with
 - **`client.template.getChannelTemplates()`** - Retrieves channel templates for a specific template version
 
 **Messaging** (`client.message.*`)
-- **`client.message.send()`** - Sends a message using a template to a recipient via a chosen channel
+- **`client.message.send()`** - Sends a message (with or without using a template) to a recipient via a chosen channel
 - **`client.message.getReplies()`** - Retrieves replies for a specific message ID
 - **`client.message.getStatus()`** - Retrieves the status of a specific message (SENT, DELIVERED, FAILED, etc.)
 
