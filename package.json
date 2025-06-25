@@ -1,6 +1,6 @@
 {
-  "name": "siren-ts-sdk",
-  "version": "1.0.0",
+  "name": "@sirenapp/node",
+  "version": "0.1.0",
   "description": "TypeScript SDK for interacting with the Siren API",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -26,6 +26,9 @@
   ],
   "author": "",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/KeyValueSoftwareSystems/siren-ts-sdk.git"
