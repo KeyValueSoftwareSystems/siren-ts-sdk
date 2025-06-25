@@ -1,0 +1,216 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# SDK Domain Structure Guide
+
+This guide defines the standard structure and patterns for SDK domains (user, template, webhook, workflow, etc.).
+
+## File Structure
+
+Each domain should have the following files:
+- `src/{domain}/client.ts` - Main client class
+- `src/{domain}/types.ts` - Type definitions
+- `examples/{domain}-usage.ts` - Example script
+
+## Client Class Structure
+
+The client class should:
+1. Extend `BaseClient`
+2. Have clear method documentation with JSDoc comments
+3. Follow consistent parameter naming (camelCase)
+4. Use proper type annotations
+5. Handle API responses consistently
+
+### Method Patterns
+
+#### Pattern 1: Direct Request Type
+Use this pattern when the request is straightforward and maps directly to the API payload:
+
+```typescript
+/**
+ * Method description.
+ * @param requestData - Request data matching the RequestType interface fields
+ * @returns A ResponseType object representing the operation result
+ */
+async methodName(requestData: RequestType): Promise<ResponseType> {
+  const response = await this.makeRequest<RequestType, ResponseType>(
+    'HTTP_METHOD',
+    '/api/v1/public/endpoint',
+    requestData
+  );
+  return response.data as ResponseType;
+}
+```
+
+#### Pattern 2: Individual Parameters
+Use this pattern when:
+- The method needs complex validation logic
+- Parameters are optional or have interdependencies
+- The API payload needs to be constructed from multiple parameters
+
+```typescript
+/**
+ * Method description.
+ * @param param1 - Description of first parameter
+ * @param param2 - Description of second parameter
+ * @param optionalParam - Description of optional parameter
+ * @returns A ResponseType object representing the operation result
+ */
+async methodName(
+  param1: Param1Type,
+  param2: Param2Type,
+  optionalParam?: OptionalType
+): Promise<ResponseType> {
+  // Validate parameters
+  if (!param1 || !param2) {
+    throw new SirenValidationError('Required parameters missing');
+  }
+
+  // Construct payload
+  const payload: RequestType = {
+    field1: param1,
+    field2: param2,
+    ...(optionalParam && { optionalField: optionalParam })
+  };
+
+  const response = await this.makeRequest<RequestType, ResponseType>(
+    'HTTP_METHOD',
+    '/api/v1/public/endpoint',
+    payload
+  );
+  return response.data as ResponseType;
+}
+```
+
+## Types Structure
+
+Types should:
+1. Use clear, descriptive interfaces
+2. Follow consistent naming (PascalCase for types, camelCase for properties)
+3. Include proper JSDoc comments
+4. Only define types that are actually used in the client methods
+5. Use the `APIResponse` wrapper at the client level, not in type definitions
+
+Example structure:
+```typescript
+/**
+ * Base interface for domain data.
+ */
+export interface DomainBase {
+  /** Unique identifier */
+  id?: string;
+  /** Name of the domain object */
+  name?: string;
+  // ... other base fields
+}
+
+/**
+ * Request interface for domain operations.
+ */
+export interface DomainRequest extends DomainBase {}
+
+/**
+ * Response data for domain operations.
+ */
+export interface Domain extends DomainBase {
+  /** Creation timestamp */
+  createdAt?: string;
+  /** Last update timestamp */
+  updatedAt?: string;
+  // ... other response fields
+}
+```
+
+Note: Do not define API response types (e.g., `DomainAPIResponse`) in the types file. The `APIResponse` wrapper is handled at the client level through `makeRequest<RequestType, ResponseType>`.
+
+## Example Script Structure
+
+Example scripts should:
+1. Use consistent environment setup
+2. Show all main operations
+3. Use exact same values as Python SDK examples
+4. Have proper error handling
+5. Use minimal but complete examples
+
+Example structure:
+```typescript
+import 'dotenv/config';
+import { SirenClient } from '../src';
+import { SirenAPIError, SirenError } from '../src/common/errors';
+
+const apiToken = process.env.SIREN_API_KEY;
+if (!apiToken) {
+  console.error('Error: SIREN_API_KEY environment variable is not set');
+  process.exit(1);
+}
+
+const client = new SirenClient({ apiToken, env: 'dev' });
+
+async function domainExamples() {
+  try {
+    // Operation 1
+    const result1 = await client.domain.operation1({
+      // Use exact same values as Python SDK
+    });
+    console.log('Operation 1 result:', result1);
+
+    // Operation 2
+    const result2 = await client.domain.operation2({
+      // Use exact same values as Python SDK
+    });
+    console.log('Operation 2 result:', result2);
+  } catch (error) {
+    if (error instanceof SirenAPIError) {
+      console.error(`API Error: ${error.errorCode} - ${error.message}`);
+    } else if (error instanceof SirenError) {
+      console.error(`SDK Error: ${error.message}`);
+    } else {
+      console.error('Unexpected error:', error);
+    }
+  }
+}
+
+domainExamples();
+```
+
+## Error Handling
+
+All domains should:
+1. Use `SirenAPIError` for API-level errors
+2. Use `SirenError` for SDK-level errors
+3. Include proper error messages and codes
+4. Handle errors consistently across all methods
+
+## API Response Handling
+
+All domains should:
+1. Use the `APIResponse` wrapper consistently
+2. Handle null checks properly
+3. Use type assertions only when necessary
+4. Return clean data objects without the wrapper
+
+## Testing
+
+Each domain should have:
+1. Unit tests for all methods
+2. Tests for success and error cases
+3. Tests matching Python SDK's test cases
+4. Proper mocking of API responses
+
+## Documentation
+
+Each domain should have:
+1. Clear method documentation
+2. Type documentation
+3. Example usage in comments
+4. Consistent formatting
+
+## References
+
+For reference implementations, see:
+- [User Client](mdc:siren-ts-sdk/src/user/client.ts)
+- [User Types](mdc:siren-ts-sdk/src/user/types.ts)
+- [User Example](mdc:siren-ts-sdk/examples/user-usage.ts)
+- [Messaging Client](mdc:siren-ts-sdk/src/messaging/client.ts)

@@ -1,0 +1,62 @@
+{
+  "name": "@sirenapp/node",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for interacting with the Siren API",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run lint",
+    "preversion": "npm run lint",
+    "version": "npm run format && git add -A src",
+    "postversion": "git push && git push --tags"
+  },
+  "keywords": [
+    "siren",
+    "api",
+    "sdk",
+    "typescript",
+    "notifications",
+    "workflow",
+    "templates"
+  ],
+  "author": "",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KeyValueSoftwareSystems/siren-ts-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/KeyValueSoftwareSystems/siren-ts-sdk/issues"
+  },
+  "homepage": "https://github.com/KeyValueSoftwareSystems/siren-ts-sdk#readme",
+  "dependencies": {
+    "dotenv": "^16.5.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^18.15.11",
+    "@typescript-eslint/eslint-plugin": "^5.57.1",
+    "@typescript-eslint/parser": "^5.57.1",
+    "eslint": "^8.37.0",
+    "jest": "^29.5.0",
+    "prettier": "^2.8.7",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.0.3"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
+}
