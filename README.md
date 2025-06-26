@@ -21,14 +21,13 @@ yarn add siren-ts-sdk
 ## Basic Usage
 
 ```typescript
-import { SirenClient } from 'siren-ts-sdk';
+import { SirenClient, ProviderCode } from 'siren-ts-sdk';
 
-// Initialize using environment variables SIREN_API_KEY (and SIREN_ENV if available)
+// Initialize using environment variables SIREN_API_KEY (and optional SIREN_ENV)
 const client = new SirenClient();
 
 // --- Send a direct message (no template) ---
 const directMessageId = await client.message.send(
-  'direct',
   'alice@company.com',
   'EMAIL',
   'Your account has been successfully verified. You can now access all features.'
@@ -37,14 +36,42 @@ console.log('Sent direct message:', directMessageId);
 
 // --- Send a message using a template ---
 const templatedMessageId = await client.message.send(
-  'direct',            
-  'U01UBCD06BB',       
-  'SLACK',             
-  undefined,           
-  'welcome_template',  
+  'U01UBCD06BB',
+  'SLACK',
+  undefined,                       // body
+  'welcome_template',              // template name
   { user_name: 'John' }
 );
 console.log('Sent template message:', templatedMessageId);
+
+// --- Send with a specific provider ---
+const providerMessageId = await client.message.send(
+  'alice@company.com',
+  'EMAIL',
+  'Your account has been successfully verified.',
+  undefined,
+  undefined,
+  'email-provider',                // provider name
+  ProviderCode.EMAIL_SENDGRID      // provider code
+);
+console.log('Sent with provider:', providerMessageId);
+
+// --- Send using an awesome template identifier ---
+const awesomeMessageId = await client.message.sendAwesomeTemplate(
+  'U01UBCD06BB',
+  'SLACK',
+  'awesome-templates/customer-support/escalation_required/official/casual.yaml',
+  {
+    ticket_id: '123456',
+    customer_name: 'John',
+    issue_summary: 'Payment processing issue',
+    ticket_url: 'https://support.company.com/ticket/123456',
+    sender_name: 'Support Team'
+  },
+  'slack-provider',
+  ProviderCode.SLACK
+);
+console.log('Sent awesome template:', awesomeMessageId);
 ```
 
 ## SDK Methods
@@ -64,6 +91,7 @@ The Siren TypeScript SDK provides a clean, namespaced interface to interact with
 
 **Messaging** (`client.message.*`)
 - **`client.message.send()`** - Sends a message (with or without using a template) to a recipient via a chosen channel
+- **`client.message.send_awesome_template()`** - Sends a message using a template path/identifier
 - **`client.message.getReplies()`** - Retrieves replies for a specific message ID
 - **`client.message.getStatus()`** - Retrieves the status of a specific message (SENT, DELIVERED, FAILED, etc.)
 

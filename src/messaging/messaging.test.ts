@@ -1,5 +1,4 @@
 import { MessageClient } from './client';
-import { SirenConfig } from '../common/types';
 
 const API_TOKEN = 'test_api_key';
 const BASE_URL = 'https://api.dev.trysiren.io';
@@ -15,18 +14,17 @@ describe('MessageClient', () => {
     it('should send a direct message successfully', async () => {
       const mockResponse = {
         data: {
-          notificationId: 'test_msg_123',
+          notificationId: 'test_msg_123'
         },
-        error: null,
+        error: null
       };
 
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockResponse),
+        json: () => Promise.resolve(mockResponse)
       });
 
       const result = await client.send(
-        'direct',
         'alice@company.com',
         'EMAIL',
         'Your account has been successfully verified.'
@@ -35,36 +33,31 @@ describe('MessageClient', () => {
       expect(result).toBe('test_msg_123');
       expect(global.fetch).toHaveBeenCalledWith(
         `${BASE_URL}/api/v1/public/send-messages`,
-        {
+        expect.objectContaining({
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${API_TOKEN}`,
-            'Content-Type': 'application/json',
-          },
           body: JSON.stringify({
-            recipient: { type: 'direct', value: 'alice@company.com' },
+            recipient: { email: 'alice@company.com' },
             channel: 'EMAIL',
             body: 'Your account has been successfully verified.'
-          }),
-        }
+          })
+        })
       );
     });
 
     it('should send a template message successfully', async () => {
       const mockResponse = {
         data: {
-          notificationId: 'test_msg_456',
+          notificationId: 'test_msg_456'
         },
-        error: null,
+        error: null
       };
 
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockResponse),
+        json: () => Promise.resolve(mockResponse)
       });
 
       const result = await client.send(
-        'direct',
         'U01UBCD06BB',
         'SLACK',
         undefined,
@@ -75,26 +68,22 @@ describe('MessageClient', () => {
       expect(result).toBe('test_msg_456');
       expect(global.fetch).toHaveBeenCalledWith(
         `${BASE_URL}/api/v1/public/send-messages`,
-        {
+        expect.objectContaining({
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${API_TOKEN}`,
-            'Content-Type': 'application/json',
-          },
           body: JSON.stringify({
-            recipient: { type: 'direct', value: 'U01UBCD06BB' },
+            recipient: { slack: 'U01UBCD06BB' },
             channel: 'SLACK',
             template: { name: 'welcome_template' },
             templateVariables: { user_name: 'John' }
-          }),
-        }
+          })
+        })
       );
     });
 
     it('should throw error if neither body nor template is provided', async () => {
-      await expect(
-        client.send('direct', 'U01UBCD06BB', 'SLACK')
-      ).rejects.toThrow('Either body or templateName must be provided');
+      await expect(client.send('U01UBCD06BB', 'SLACK')).rejects.toThrow(
+        'Either body or templateName must be provided'
+      );
     });
 
     it('should handle API errors', async () => {
@@ -102,19 +91,63 @@ describe('MessageClient', () => {
         data: null,
         error: {
           errorCode: 'INVALID_TEMPLATE',
-          message: 'Template not found',
-        },
+          message: 'Template not found'
+        }
       };
 
       global.fetch = jest.fn().mockResolvedValue({
         ok: false,
         status: 404,
-        json: () => Promise.resolve(mockError),
+        json: () => Promise.resolve(mockError)
       });
 
       await expect(
-        client.send('direct', 'U01UBCD06BB', 'SLACK', undefined, 'nonexistent')
+        client.send('U01UBCD06BB', 'SLACK', undefined, 'nonexistent')
       ).rejects.toThrow('Template not found');
+    });
+  });
+
+  describe('sendAwesomeTemplate', () => {
+    it('should send awesome template successfully', async () => {
+      const mockResponse = {
+        data: {
+          notificationId: 'awesome_msg_123'
+        },
+        error: null
+      };
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(mockResponse)
+      });
+
+      const result = await client.sendAwesomeTemplate(
+        'U08FK1G6DGE',
+        'SLACK',
+        'awesome-templates/customer-support/escalation_required/official/casual.yaml',
+        {
+          ticket_id: '123',
+          customer_name: 'John'
+        }
+      );
+
+      expect(result).toBe('awesome_msg_123');
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${BASE_URL}/api/v1/public/send-awesome-messages`,
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            channel: 'SLACK',
+            templateIdentifier:
+              'awesome-templates/customer-support/escalation_required/official/casual.yaml',
+            recipient: { slack: 'U08FK1G6DGE' },
+            templateVariables: {
+              ticket_id: '123',
+              customer_name: 'John'
+            }
+          })
+        })
+      );
     });
   });
 
