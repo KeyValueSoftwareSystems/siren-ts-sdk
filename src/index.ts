@@ -5,3 +5,4 @@ export * from './template/types';
 export * from './workflow/types';
 export * from './common/types';
 export * from './common/errors';
+export * from './messaging/types';
