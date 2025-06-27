@@ -13,15 +13,15 @@ This is the official TypeScript SDK for the [Siren notification platform](https:
 ## Installation
 
 ```bash
-npm install siren-ts-sdk
+npm install @trysiren/node
 # or
-yarn add siren-ts-sdk
+yarn add @trysiren/node
 ```
 
 ## Basic Usage
 
 ```typescript
-import { SirenClient, ProviderCode } from 'siren-ts-sdk';
+import { SirenClient, ProviderCode } from '@trysiren/node';
 
 // Initialize using environment variables SIREN_API_KEY (and optional SIREN_ENV)
 const client = new SirenClient();
@@ -151,7 +151,7 @@ For testing the SDK, set these environment variables:
     yarn prepare
     ```
 
-    You are now ready to contribute to the `siren-ts-sdk`!
+    You are now ready to contribute to the `@trysiren/node`!
 
 ### Code Style & Linting
 
