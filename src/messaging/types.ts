@@ -52,6 +52,18 @@ export interface Recipient {
   pushToken?: string;
 }
 
+export enum RecipientChannel {
+  EMAIL = 'EMAIL',
+  SMS = 'SMS',
+  WHATSAPP = 'WHATSAPP',
+  SLACK = 'SLACK',
+  TEAMS = 'TEAMS',
+  DISCORD = 'DISCORD',
+  LINE = 'LINE',
+  IN_APP = 'IN_APP',
+  PUSH = 'PUSH'
+}
+
 /**
  * Template metadata for message sending.
  */
@@ -66,6 +78,7 @@ export interface SendMessageRequest {
   channel: string;
   recipient: Recipient;
   body?: string;
+  subject?: string;
   template?: TemplateInfo;
   templateVariables?: Record<string, any>;
   templateIdentifier?: string;
@@ -90,4 +103,24 @@ export interface ReplyData {
   user: string;
   ts: string;
   threadTs: string;
+}
+
+export interface SendMessageParams {
+  recipientValue: string;
+  channel: RecipientChannel;
+  body?: string;
+  subject?: string;
+  templateName?: string;
+  templateVariables?: Record<string, any>;
+  providerName?: string;
+  providerCode?: ProviderCode;
+}
+
+export interface SendAwesomeTemplateParams {
+  recipientValue: string;
+  channel: RecipientChannel;
+  templateIdentifier: string;
+  templateVariables?: Record<string, any>;
+  providerName?: string;
+  providerCode?: ProviderCode;
 }

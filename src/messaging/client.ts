@@ -8,7 +8,10 @@ import {
   SendMessageRequest,
   MessageData,
   StatusData,
-  ReplyData
+  ReplyData,
+  RecipientChannel,
+  SendMessageParams,
+  SendAwesomeTemplateParams
 } from './types';
 
 /** Mapping between channel names and recipient field keys */
@@ -34,28 +37,25 @@ export class MessageClient extends BaseClient {
    * @param recipientValue - Identifier for the recipient (e.g., Slack user ID, email address)
    * @param channel - Channel to send the message through (e.g., "SLACK", "EMAIL")
    * @param body - Optional raw body text (required if no template)
+   * @param subject - Optional subject for the message (required if body is provided for EMAIL channel)
    * @param templateName - Optional template name (required if no body)
    * @param templateVariables - Optional variables for template-based messages
    * @param providerName - Optional provider integration name (must be provided with providerCode)
    * @param providerCode - Optional provider integration code (must be provided with providerName)
    * @returns Notification ID of the sent message
    */
-  async send(
-    recipientValue: string,
-    channel: string,
-    body?: string,
-    templateName?: string,
-    templateVariables?: Record<string, any>,
-    providerName?: string,
-    providerCode?: ProviderCode
-  ): Promise<string> {
-    if (!body && !templateName) {
-      throw new SirenValidationError('Either body or templateName must be provided');
-    }
-
-    if ((providerName !== undefined) !== (providerCode !== undefined)) {
-      throw new SirenValidationError('Both providerName and providerCode must be provided together');
-    }
+  async send(params: SendMessageParams): Promise<string> {
+    this.validateSendMessageParams(params);
+    const {
+      recipientValue,
+      channel,
+      body,
+      subject,
+      templateName,
+      templateVariables,
+      providerName,
+      providerCode
+    } = params;
 
     const recipient = this.createRecipient(channel, recipientValue);
 
@@ -68,6 +68,10 @@ export class MessageClient extends BaseClient {
       payload.body = body;
     } else if (templateName) {
       payload.template = { name: templateName };
+    }
+
+    if (subject) {
+      payload.subject = subject;
     }
 
     if (templateVariables) {
@@ -90,20 +94,52 @@ export class MessageClient extends BaseClient {
     return response.data!.notificationId;
   }
 
+  private validateSendMessageParams({
+    channel,
+    body,
+    subject,
+    templateName,
+    providerName,
+    providerCode
+  }: SendMessageParams) {
+    if (!body && !templateName) {
+      throw new SirenValidationError(
+        'Either body or templateName must be provided'
+      );
+    }
+
+    if ((providerName !== undefined) !== (providerCode !== undefined)) {
+      throw new SirenValidationError(
+        'Both providerName and providerCode must be provided together'
+      );
+    }
+
+    if (channel === RecipientChannel.EMAIL) {
+      // if channel is email and body is provided, subject must also be provided
+      if (body && !subject) {
+        throw new SirenValidationError(
+          'Subject must be provided when body is specified for EMAIL channel'
+        );
+      }
+    }
+  }
+
   /**
    * Send a message using an awesome template path/identifier.
    */
   async sendAwesomeTemplate(
-    recipientValue: string,
-    channel: string,
-    templateIdentifier: string,
-    templateVariables?: Record<string, any>,
-    providerName?: string,
-    providerCode?: ProviderCode
+    params: SendAwesomeTemplateParams
   ): Promise<string> {
-    if ((providerName !== undefined) !== (providerCode !== undefined)) {
-      throw new SirenValidationError('Both providerName and providerCode must be provided together');
-    }
+    this.validateSendAwesomeTemplateParams(params);
+
+    const {
+      recipientValue,
+      channel,
+      templateIdentifier,
+      templateVariables,
+      providerName,
+      providerCode
+    } = params;
 
     const recipient = this.createRecipient(channel, recipientValue);
 
@@ -133,6 +169,15 @@ export class MessageClient extends BaseClient {
     return response.data!.notificationId;
   }
 
+  private validateSendAwesomeTemplateParams(params: SendAwesomeTemplateParams) {
+    const { providerCode, providerName } = params;
+    if ((providerName !== undefined) !== (providerCode !== undefined)) {
+      throw new SirenValidationError(
+        'Both providerName and providerCode must be provided together'
+      );
+    }
+  }
+
   /**
    * Retrieve the status of a specific message.
    */
@@ -160,7 +205,10 @@ export class MessageClient extends BaseClient {
   /**
    * Create the recipient object for the payload based on channel.
    */
-  private createRecipient(channel: string, recipientValue: string): Recipient {
+  private createRecipient(
+    channel: RecipientChannel,
+    recipientValue: string
+  ): Recipient {
     const key = CHANNEL_RECIPIENT_KEY[channel.toUpperCase()];
     if (!key) {
       throw new SirenValidationError(`Unsupported channel: ${channel}`);
@@ -170,4 +218,4 @@ export class MessageClient extends BaseClient {
       [key]: recipientValue
     } as Recipient;
   }
-} 
+}

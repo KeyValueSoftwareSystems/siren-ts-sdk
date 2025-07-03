@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { SirenClient, ProviderCode } from '../src';
+import { SirenClient, ProviderCode, RecipientChannel } from '../src';
 import { SirenAPIError, SirenError } from '../src/common/errors';
 
 const apiToken = process.env.SIREN_API_KEY;
@@ -8,53 +8,65 @@ if (!apiToken) {
   process.exit(1);
 }
 
-const client = new SirenClient({ apiToken, env: 'dev' });
+const client = new SirenClient({ apiToken, env: 'prod' });
 
 async function messagingExamples() {
   try {
     // Send direct message without template
+    const directMessageWithoutTemplateParams = {
+      recipientValue: 'U01UBCD06BB',
+      channel: RecipientChannel.SLACK,
+      body: 'Hello! This is a direct message without specifying template/provider.'
+    };
     const simpleMessageId = await client.message.send(
-      'U01UBCD06BB', // Slack user ID
-      'SLACK',
-      'Hello! This is a direct message without specifying template/provider.',
+      directMessageWithoutTemplateParams
     );
     console.log('Message sent:', simpleMessageId);
 
-
-    // Send direct message without template
+    // Send direct message without template but with provider
+    const directMessageWithProviderParams = {
+      recipientValue: 'U01UBCD06BB',
+      channel: RecipientChannel.SLACK,
+      body: 'Hello! This is a direct message without template.',
+      providerName: 'slack-test-py-sdk', // optional
+      providerCode: ProviderCode.SLACK // optional
+    };
     const messageId = await client.message.send(
-      'U01UBCD06BB', // Slack user ID
-      'SLACK',
-      'Hello! This is a direct message without template.',
-      undefined, // templateName
-      undefined, // templateVariables
-      'slack-test-py-sdk', // provider name (optional)
-      ProviderCode.SLACK // provider code (optional)
+      directMessageWithProviderParams
     );
+
     console.log('Message sent:', messageId);
 
     // Send message using template
+    const messageWithTemplateParams = {
+      recipientValue: 'U01UBCD06BB',
+      channel: RecipientChannel.SLACK,
+      templateName: 'sampleTemplate',
+      templateVariables: { user_name: 'Alan' }
+    };
     const templateMessageId = await client.message.send(
-      'U01UBCD06BB',
-      'SLACK',
-      undefined,
-      'sampleTemplate',
-      { user_name: 'Alan' },
+      messageWithTemplateParams
     );
     console.log('Template message sent:', templateMessageId);
 
-    // // Send message using awesome template identifier
-    const awesomeMessageId = await client.message.sendAwesomeTemplate(
-      'U01UBCD06BB',
-      'SLACK',
-      'awesome-templates/customer-support/refund_complete/official/default.yaml',
-      {
-        "reference_id": "123456",
-        "customer_name": "John"
+    // Send message using awesome template identifier
+    const SendAwesomeTemplateParams = {
+      recipientValue: 'U01UBCD06BB',
+      channel: RecipientChannel.SLACK,
+      templateIdentifier:
+        'awesome-templates/customer-support/refund_complete/official/default.yaml',
+      templateVariables: {
+        reference_id: '123456',
+        customer_name: 'John'
       },
-      'slack-test-py-sdk',
-      ProviderCode.SLACK
+      providerName: 'slack-test-py-sdk',
+      providerCode: ProviderCode.SLACK
+    };
+
+    const awesomeMessageId = await client.message.sendAwesomeTemplate(
+      SendAwesomeTemplateParams
     );
+
     console.log('Awesome template message sent:', awesomeMessageId);
 
     // Get message status
@@ -75,4 +87,4 @@ async function messagingExamples() {
   }
 }
 
-messagingExamples(); 
+messagingExamples();
