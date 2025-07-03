@@ -38,8 +38,7 @@ console.log('Sent direct message:', directMessageId);
 const templatedMessageId = await client.message.send({
   recipientValue: 'U01UBCD06BB',
   channel: RecipientChannel.SLACK,
-  body: undefined, // body
-  templateName: 'welcome_template', // template name
+  templateName: 'welcome_template',
   templateVariables: { user_name: 'John' }
 });
 console.log('Sent template message:', templatedMessageId);
@@ -49,18 +48,17 @@ const providerMessageId = await client.message.send({
   recipientValue: 'alice@company.com',
   channel: RecipientChannel.EMAIL,
   body: 'Your account has been successfully verified.',
-  subject: undefined,
-  templateName: undefined,
-  providerName: 'email-provider', // provider name
-  providerCode: ProviderCode.EMAIL_SENDGRID // provider code
-);
+  providerName: 'email-provider',
+  providerCode: ProviderCode.EMAIL_SENDGRID
+});
 console.log('Sent with provider:', providerMessageId);
 
 // --- Send using an awesome template identifier ---
 const awesomeMessageId = await client.message.sendAwesomeTemplate({
   recipientValue: 'U01UBCD06BB',
   channel: RecipientChannel.SLACK,
-  templateIdentifier: 'awesome-templates/customer-support/escalation_required/official/casual.yaml',
+  templateIdentifier:
+    'awesome-templates/customer-support/escalation_required/official/casual.yaml',
   templateVariables: {
     ticket_id: '123456',
     customer_name: 'John',
@@ -70,7 +68,7 @@ const awesomeMessageId = await client.message.sendAwesomeTemplate({
   },
   providerName: 'slack-provider',
   providerCode: ProviderCode.SLACK
-);
+});
 console.log('Sent awesome template:', awesomeMessageId);
 ```
 
