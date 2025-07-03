@@ -1,4 +1,5 @@
 import { MessageClient } from './client';
+import { RecipientChannel } from './types';
 
 const API_TOKEN = 'test_api_key';
 const BASE_URL = 'https://api.dev.trysiren.io';
@@ -24,11 +25,13 @@ describe('MessageClient', () => {
         json: () => Promise.resolve(mockResponse)
       });
 
-      const result = await client.send(
-        'alice@company.com',
-        'EMAIL',
-        'Your account has been successfully verified.'
-      );
+      const sendParams = {
+        recipientValue: 'alice@company.com',
+        channel: RecipientChannel.EMAIL,
+        body: 'Your account has been successfully verified.',
+        subject: 'Account Verification'
+      };
+      const result = await client.send(sendParams);
 
       expect(result).toBe('test_msg_123');
       expect(global.fetch).toHaveBeenCalledWith(
@@ -38,7 +41,8 @@ describe('MessageClient', () => {
           body: JSON.stringify({
             recipient: { email: 'alice@company.com' },
             channel: 'EMAIL',
-            body: 'Your account has been successfully verified.'
+            body: 'Your account has been successfully verified.',
+            subject: 'Account Verification'
           })
         })
       );
@@ -57,13 +61,13 @@ describe('MessageClient', () => {
         json: () => Promise.resolve(mockResponse)
       });
 
-      const result = await client.send(
-        'U01UBCD06BB',
-        'SLACK',
-        undefined,
-        'welcome_template',
-        { user_name: 'John' }
-      );
+      const sendParams = {
+        recipientValue: 'U01UBCD06BB',
+        channel: RecipientChannel.SLACK,
+        templateName: 'welcome_template',
+        templateVariables: { user_name: 'John' }
+      };
+      const result = await client.send(sendParams);
 
       expect(result).toBe('test_msg_456');
       expect(global.fetch).toHaveBeenCalledWith(
@@ -81,7 +85,11 @@ describe('MessageClient', () => {
     });
 
     it('should throw error if neither body nor template is provided', async () => {
-      await expect(client.send('U01UBCD06BB', 'SLACK')).rejects.toThrow(
+      const sendParams = {
+        recipientValue: 'U01UBCD06BB',
+        channel: RecipientChannel.SLACK
+      };
+      await expect(client.send(sendParams)).rejects.toThrow(
         'Either body or templateName must be provided'
       );
     });
@@ -101,9 +109,14 @@ describe('MessageClient', () => {
         json: () => Promise.resolve(mockError)
       });
 
-      await expect(
-        client.send('U01UBCD06BB', 'SLACK', undefined, 'nonexistent')
-      ).rejects.toThrow('Template not found');
+      const sendParams = {
+        recipientValue: 'U01UBCD06BB',
+        channel: RecipientChannel.SLACK,
+        templateName: 'nonexistent'
+      };
+      await expect(client.send(sendParams)).rejects.toThrow(
+        'Template not found'
+      );
     });
   });
 
@@ -121,14 +134,19 @@ describe('MessageClient', () => {
         json: () => Promise.resolve(mockResponse)
       });
 
-      const result = await client.sendAwesomeTemplate(
-        'U08FK1G6DGE',
-        'SLACK',
-        'awesome-templates/customer-support/escalation_required/official/casual.yaml',
-        {
+      const sendAwesomeTemplateParams = {
+        recipientValue: 'U08FK1G6DGE',
+        channel: RecipientChannel.SLACK,
+        templateIdentifier:
+          'awesome-templates/customer-support/escalation_required/official/casual.yaml',
+        templateVariables: {
           ticket_id: '123',
           customer_name: 'John'
         }
+      };
+
+      const result = await client.sendAwesomeTemplate(
+        sendAwesomeTemplateParams
       );
 
       expect(result).toBe('awesome_msg_123');
@@ -155,14 +173,14 @@ describe('MessageClient', () => {
     it('should get message status successfully', async () => {
       const mockResponse = {
         data: {
-          status: 'DELIVERED',
+          status: 'DELIVERED'
         },
-        error: null,
+        error: null
       };
 
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockResponse),
+        json: () => Promise.resolve(mockResponse)
       });
 
       const result = await client.getStatus('test_msg_123');
@@ -181,12 +199,12 @@ describe('MessageClient', () => {
             threadTs: '1234567890.123456'
           }
         ],
-        error: null,
+        error: null
       };
 
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockResponse),
+        json: () => Promise.resolve(mockResponse)
       });
 
       const result = await client.getReplies('test_msg_123');
@@ -200,4 +218,4 @@ describe('MessageClient', () => {
       ]);
     });
   });
-}); 
+});
