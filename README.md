@@ -34,6 +34,19 @@ const directMessageId = await client.message.send(
 );
 console.log('Sent direct message:', directMessageId);
 
+// --- Send an email with subject ---
+const emailWithSubjectId = await client.message.send(
+  'alice@company.com',
+  'EMAIL',
+  'Your account has been successfully verified. You can now access all features.',
+  undefined,                       // template name
+  undefined,                       // template variables
+  undefined,                       // provider name
+  undefined,                       // provider code
+  'Account Verification Complete'  // subject
+);
+console.log('Sent email with subject:', emailWithSubjectId);
+
 // --- Send a message using a template ---
 const templatedMessageId = await client.message.send(
   'U01UBCD06BB',
@@ -43,6 +56,19 @@ const templatedMessageId = await client.message.send(
   { user_name: 'John' }
 );
 console.log('Sent template message:', templatedMessageId);
+
+// --- Send a template email with subject ---
+const templateEmailWithSubjectId = await client.message.send(
+  'alice@company.com',
+  'EMAIL',
+  undefined,                       // body
+  'welcome_template',              // template name
+  { user_name: 'John' },           // template variables
+  undefined,                       // provider name
+  undefined,                       // provider code
+  'Welcome to Our Platform'        // subject
+);
+console.log('Sent template email with subject:', templateEmailWithSubjectId);
 
 // --- Send with a specific provider ---
 const providerMessageId = await client.message.send(
@@ -72,6 +98,24 @@ const awesomeMessageId = await client.message.sendAwesomeTemplate(
   ProviderCode.SLACK
 );
 console.log('Sent awesome template:', awesomeMessageId);
+
+// --- Send awesome template email with subject ---
+const awesomeEmailWithSubjectId = await client.message.sendAwesomeTemplate(
+  'alice@company.com',
+  'EMAIL',
+  'awesome-templates/customer-support/escalation_required/official/casual.yaml',
+  {
+    ticket_id: '123456',
+    customer_name: 'John',
+    issue_summary: 'Payment processing issue',
+    ticket_url: 'https://support.company.com/ticket/123456',
+    sender_name: 'Support Team'
+  },
+  'email-provider',
+  ProviderCode.EMAIL_SENDGRID,
+  'Ticket Escalation Required'     // subject
+);
+console.log('Sent awesome template email with subject:', awesomeEmailWithSubjectId);
 ```
 
 ## SDK Methods
@@ -90,8 +134,8 @@ The Siren TypeScript SDK provides a clean, namespaced interface to interact with
 - **`client.template.getChannelTemplates()`** - Retrieves channel templates for a specific template version
 
 **Messaging** (`client.message.*`)
-- **`client.message.send()`** - Sends a message (with or without using a template) to a recipient via a chosen channel
-- **`client.message.send_awesome_template()`** - Sends a message using a template path/identifier
+- **`client.message.send()`** - Sends a message (with or without using a template) to a recipient via a chosen channel. Supports optional subject parameter for email messages
+- **`client.message.send_awesome_template()`** - Sends a message using a template path/identifier. Supports optional subject parameter for email messages
 - **`client.message.getReplies()`** - Retrieves replies for a specific message ID
 - **`client.message.getStatus()`** - Retrieves the status of a specific message (SENT, DELIVERED, FAILED, etc.)
 

@@ -66,6 +66,7 @@ export interface SendMessageRequest {
   channel: string;
   recipient: Recipient;
   body?: string;
+  subject?: string;
   template?: TemplateInfo;
   templateVariables?: Record<string, any>;
   templateIdentifier?: string;

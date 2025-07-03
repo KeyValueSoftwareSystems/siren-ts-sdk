@@ -80,6 +80,118 @@ describe('MessageClient', () => {
       );
     });
 
+    it('should send a direct message with subject successfully', async () => {
+      const mockResponse = {
+        data: {
+          notificationId: 'test_msg_with_subject_123'
+        },
+        error: null
+      };
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(mockResponse)
+      });
+
+      const result = await client.send(
+        'alice@company.com',
+        'EMAIL',
+        'Your account has been successfully verified.',
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        'Account Verification Complete'
+      );
+
+      expect(result).toBe('test_msg_with_subject_123');
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${BASE_URL}/api/v1/public/send-messages`,
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            recipient: { email: 'alice@company.com' },
+            channel: 'EMAIL',
+            body: 'Your account has been successfully verified.',
+            subject: 'Account Verification Complete'
+          })
+        })
+      );
+    });
+
+    it('should send a template message with subject successfully', async () => {
+      const mockResponse = {
+        data: {
+          notificationId: 'test_msg_template_subject_456'
+        },
+        error: null
+      };
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(mockResponse)
+      });
+
+      const result = await client.send(
+        'alice@company.com',
+        'EMAIL',
+        undefined,
+        'welcome_template',
+        { user_name: 'John' },
+        undefined,
+        undefined,
+        'Welcome to Our Platform'
+      );
+
+      expect(result).toBe('test_msg_template_subject_456');
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${BASE_URL}/api/v1/public/send-messages`,
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            recipient: { email: 'alice@company.com' },
+            channel: 'EMAIL',
+            template: { name: 'welcome_template' },
+            subject: 'Welcome to Our Platform',
+            templateVariables: { user_name: 'John' }
+          })
+        })
+      );
+    });
+
+    it('should send a message without subject (existing behavior)', async () => {
+      const mockResponse = {
+        data: {
+          notificationId: 'test_msg_no_subject_789'
+        },
+        error: null
+      };
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(mockResponse)
+      });
+
+      const result = await client.send(
+        'alice@company.com',
+        'EMAIL',
+        'Your account has been successfully verified.'
+      );
+
+      expect(result).toBe('test_msg_no_subject_789');
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${BASE_URL}/api/v1/public/send-messages`,
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            recipient: { email: 'alice@company.com' },
+            channel: 'EMAIL',
+            body: 'Your account has been successfully verified.'
+          })
+        })
+      );
+    });
+
     it('should throw error if neither body nor template is provided', async () => {
       await expect(client.send('U01UBCD06BB', 'SLACK')).rejects.toThrow(
         'Either body or templateName must be provided'
@@ -141,6 +253,52 @@ describe('MessageClient', () => {
             templateIdentifier:
               'awesome-templates/customer-support/escalation_required/official/casual.yaml',
             recipient: { slack: 'U08FK1G6DGE' },
+            templateVariables: {
+              ticket_id: '123',
+              customer_name: 'John'
+            }
+          })
+        })
+      );
+    });
+
+    it('should send awesome template with subject successfully', async () => {
+      const mockResponse = {
+        data: {
+          notificationId: 'awesome_msg_subject_456'
+        },
+        error: null
+      };
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(mockResponse)
+      });
+
+      const result = await client.sendAwesomeTemplate(
+        'alice@company.com',
+        'EMAIL',
+        'awesome-templates/customer-support/escalation_required/official/casual.yaml',
+        {
+          ticket_id: '123',
+          customer_name: 'John'
+        },
+        undefined,
+        undefined,
+        'Ticket Escalation Required'
+      );
+
+      expect(result).toBe('awesome_msg_subject_456');
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${BASE_URL}/api/v1/public/send-awesome-messages`,
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            channel: 'EMAIL',
+            templateIdentifier:
+              'awesome-templates/customer-support/escalation_required/official/casual.yaml',
+            recipient: { email: 'alice@company.com' },
+            subject: 'Ticket Escalation Required',
             templateVariables: {
               ticket_id: '123',
               customer_name: 'John'

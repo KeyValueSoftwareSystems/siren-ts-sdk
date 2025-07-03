@@ -38,6 +38,7 @@ export class MessageClient extends BaseClient {
    * @param templateVariables - Optional variables for template-based messages
    * @param providerName - Optional provider integration name (must be provided with providerCode)
    * @param providerCode - Optional provider integration code (must be provided with providerName)
+   * @param subject - Optional subject line (useful for email messages)
    * @returns Notification ID of the sent message
    */
   async send(
@@ -47,7 +48,8 @@ export class MessageClient extends BaseClient {
     templateName?: string,
     templateVariables?: Record<string, any>,
     providerName?: string,
-    providerCode?: ProviderCode
+    providerCode?: ProviderCode,
+    subject?: string
   ): Promise<string> {
     if (!body && !templateName) {
       throw new SirenValidationError('Either body or templateName must be provided');
@@ -68,6 +70,10 @@ export class MessageClient extends BaseClient {
       payload.body = body;
     } else if (templateName) {
       payload.template = { name: templateName };
+    }
+
+    if (subject) {
+      payload.subject = subject;
     }
 
     if (templateVariables) {
@@ -99,7 +105,8 @@ export class MessageClient extends BaseClient {
     templateIdentifier: string,
     templateVariables?: Record<string, any>,
     providerName?: string,
-    providerCode?: ProviderCode
+    providerCode?: ProviderCode,
+    subject?: string
   ): Promise<string> {
     if ((providerName !== undefined) !== (providerCode !== undefined)) {
       throw new SirenValidationError('Both providerName and providerCode must be provided together');
@@ -112,6 +119,10 @@ export class MessageClient extends BaseClient {
       templateIdentifier,
       recipient
     };
+
+    if (subject) {
+      payload.subject = subject;
+    }
 
     if (templateVariables) {
       payload.templateVariables = templateVariables;
