@@ -3,6 +3,7 @@ import { TemplateClient } from './template/client';
 import { WorkflowClient } from './workflow/client';
 import { MessageClient } from './messaging/client';
 import { UserClient } from './user/client';
+import { ProviderClient } from './provider/client';
 import { WebhookClient } from './webhook/client';
 
 const BASE_URLS = {
@@ -28,6 +29,7 @@ export class SirenClient {
   public message: MessageClient;
   /** User-related API methods */
   public user: UserClient;
+  public provider: ProviderClient;
   /**
    * Client for webhook-related operations.
    * @example
@@ -57,6 +59,7 @@ export class SirenClient {
     this.message = new MessageClient(config);
     this.user = new UserClient(config);
     this.webhook = new WebhookClient(config);
+    this.provider = new ProviderClient(config);
   }
 }
 
