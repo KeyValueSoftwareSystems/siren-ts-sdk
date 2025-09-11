@@ -5,6 +5,7 @@ import { MessageClient } from './messaging/client';
 import { UserClient } from './user/client';
 import { ProviderClient } from './provider/client';
 import { WebhookClient } from './webhook/client';
+import { ChatClient } from './chat/client';
 
 const BASE_URLS = {
   prod: 'https://api.trysiren.io',
@@ -30,6 +31,8 @@ export class SirenClient {
   /** User-related API methods */
   public user: UserClient;
   public provider: ProviderClient;
+  /** Chat-related API methods */
+  public chat: ChatClient;
   /**
    * Client for webhook-related operations.
    * @example
@@ -60,6 +63,7 @@ export class SirenClient {
     this.user = new UserClient(config);
     this.webhook = new WebhookClient(config);
     this.provider = new ProviderClient(config);
+    this.chat = new ChatClient(config);
   }
 }
 
